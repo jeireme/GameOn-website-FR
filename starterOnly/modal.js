@@ -13,6 +13,8 @@ const modalBtn = document.querySelectorAll(".modal-btn");
 const formData = document.querySelectorAll(".formData");
 const modalClose = document.querySelector(".close");
 const submitBtn = document.getElementsByClassName("btn-submit");
+const modalBody = document.getElementsByClassName("modal-body")[0];
+const form = document.getElementsByTagName("form")[0];
 
 // booleans used to validate submit
 let firstName = false;
@@ -72,7 +74,7 @@ for (let i = 0; i < 7; i++) {
   formData[i].style.position = "relative";
 }
 
-//adding some style when it's necessary for a better lisibility
+// adding some style when it's necessary for a better lisibility
 document.getElementsByClassName("formData")[3].style.paddingBottom = "7px";
 document.getElementsByClassName("formData")[6].style.paddingBottom = "30px";
 document.getElementsByClassName("errorMessage")[5].style.marginLeft = "6px";
@@ -297,16 +299,28 @@ function submit(event) {
         errorFeedback(inputErrorFeedbacks[input]);
       }
     }
-    resetInputListeners();
     event.preventDefault();
+    resetInputListeners();
+  }
+  else {
+    event.preventDefault();
+    onSubmitMessage();
   }
 }
 
-// the focusOut listeners are replacing by input listeners
-// they are more reactive and helpful when user needs help
+// the focusOut listeners are replacing by input listeners, they are more reactive and more helpful for an user who needs help
 function resetInputListeners() {
   document.getElementById("first").addEventListener("input", checkFirstNameValue);
   document.getElementById("last").addEventListener("input", checkLastNameValue);
   document.getElementById("email").addEventListener("input", checkEmailValue);
   document.getElementById("birthdate").addEventListener("input", checkBirthdateValue);
+}
+
+// after a successful submit, a success message appears 
+function onSubmitMessage() {
+  modalBody.style.display = "flex";
+  modalBody.style.justifyContent = "center";
+  modalBody.style.alignItems = "center";
+  modalBody.style.textAlign = "center";
+  form.innerHTML = '<br><br><h1>Merci !</h1><br><p>Votre réservation a bien été reçue.</p><br><br><i class="far fa-smile-wink fa-3x"></i>';
 }
