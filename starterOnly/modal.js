@@ -18,15 +18,17 @@ const submitBtn = document.getElementsByClassName("btn-submit");
 let firstName = false;
 let lastName = false;
 let competitions = false;
+let email = false;
+let birthdate = false;
 
 let errorMessageTexts = {
-  first: "Votre prénom doit comporter deux lettres minimum.",
-  last: "Votre nom doit comporter deux lettres minimum.",
-  email: "Veuillez renseigner une adresse e-mail valide.",
-  birthdate: "Veuillez indiquer une date de naissance.",
-  quantity: "Indiquez un chiffre (ou 0 si vous n'avez jamais participé).",
-  location: "Veuillez indiquer une ville.",
-  checkbox: "Vous devez accepter les conditions d'utilisation."
+  first: "Votre prénom doit comporter deux lettres minimum",
+  last: "Votre nom doit comporter deux lettres minimum",
+  email: "Veuillez renseigner une adresse e-mail valide",
+  birthdate: "Veuillez indiquer une date de naissance valide",
+  quantity: "Indiquez un chiffre (ou 0 si vous n'avez jamais participé)",
+  location: "Veuillez indiquer une ville",
+  checkbox: "Vous devez accepter les conditions d'utilisation"
 }
 
 // launch modal event
@@ -45,50 +47,97 @@ function launchModal() {
 function initListeners() {
 
   // 1) FIRST NAME
-  document.getElementById("first").addEventListener("input", function (event) {
-    console.log("INPUT");
-    if (/[a-zA-Z]{2,}/.test(event.target.value)) {
-      console.log("Nom correct");
-      firstName = true;
-      validFeedback("first", 1, 0);
-    } else {
-      console.log("Not good !!!!");
-      firstName = false;
-      errorFeedback("first", 2, 0);
-    }
+  document.getElementById("first").addEventListener("focusout", function onFocusOut(event) {
+    checkFirstNameValue(event);
+    this.removeEventListener("focusout", onFocusOut);
+    this.addEventListener("input", checkFirstNameValue);
   });
 
   // 2) LAST NAME
-  document.getElementById("last").addEventListener("input", function (event) {
-    if (/[a-zA-Z]{2,}/.test(event.target.value)) {
-      lastName = true;
-      validFeedback("last", 3, 1);
-    } else {
-      lastName = false;
-      errorFeedback("last", 4, 1);
-    }
+  document.getElementById("last").addEventListener("focusout", function onFocusOut(event) {
+    checkLastNameValue(event);
+    this.removeEventListener("focusout", onFocusOut);
+    this.addEventListener("input", checkLastNameValue);
   });
 
   // 3) EMAIL
-  document.getElementById("email").setAttribute("required", "");
-
-  // 4) COMPETITIONS
-  document.getElementById("quantity").addEventListener("focus", function (event) {
-    if (/[0-9]{1,}/.test(event.target.value)) {
-      competitions = true;
-      validFeedback("quantity", 9, 4);
-    } else {
-      competitions = false;
-      errorFeedback("quantity", 10, 4);
-    }
+  document.getElementById("email").addEventListener("focusout", function onFocusOut(event) {
+    checkEmailValue(event);
+    this.removeEventListener("focusout", onFocusOut);
+    this.addEventListener("input", checkEmailValue);
   });
 
-  // 5) LOCATIONS
+  // 4) BIRTHDATE checkBirthdateValue
+  document.getElementById("birthdate").addEventListener("focusout", function onFocusOut(event) {
+    checkBirthdateValue(event);
+    this.removeEventListener("focusout", onFocusOut);
+    this.addEventListener("input", checkBirthdateValue);
+  });
+
+  // 5) COMPETITIONS
+  document.getElementById("quantity").addEventListener("focusout", function onFocusOut(event) {
+    checkCompetitionsValue(event);
+    this.removeEventListener("focusout", onFocusOut);
+    this.addEventListener("input", checkCompetitionsValue);
+  });
+
+  // 6) LOCATIONS
   document.getElementById("location1").setAttribute("required", "");
 
-  // 6) GENERAL TERMS AND CONDITIONS
+  // 7) GENERAL TERMS AND CONDITIONS
   document.getElementById("checkbox1").setAttribute("required", "");
 
+}
+
+// 1) FIRST NAME
+function checkFirstNameValue(event) {
+  if (/[a-zA-Z]{2,}/.test(event.target.value)) {
+    firstName = true;
+    validFeedback("first", 1, 0);
+  } else {
+    firstName = false;
+    errorFeedback("first", 2, 0);
+  }
+}
+
+function checkLastNameValue(event) {
+  if (/[a-zA-Z]{2,}/.test(event.target.value)) {
+    lastName = true;
+    validFeedback("last", 3, 1);
+  } else {
+    lastName = false;
+    errorFeedback("last", 4, 1);
+  }
+}
+
+function checkEmailValue(event) {
+  if (/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(event.target.value)) {
+    email = true;
+    validFeedback("email", 5, 2);
+  } else {
+    email = false;
+    errorFeedback("email", 6, 2);
+  }
+}
+
+function checkBirthdateValue(event) {
+  if (/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/.test(event.target.value)) {
+    birthdate = true;
+    validFeedback("birthdate", 7, 3);
+  } else {
+    birthdate = false;
+    errorFeedback("birthdate", 8, 3);
+  }
+}
+
+function checkCompetitionsValue(event) {
+  if (/[0-9]{1,}/.test(event.target.value)) {
+    competitions = true;
+    validFeedback("quantity", 9, 4);
+  } else {
+    competitions = false;
+    errorFeedback("quantity", 10, 4);
+  }
 }
 
 // closing modal with display none
@@ -99,7 +148,7 @@ function closeModal() {
 // if the entries are not correct, user can't submit (see the functions below)
 function submit(event) {
   console.log("SUBMIT");
-  if (!firstName || !lastName || !competitions) {
+  if (!firstName || !lastName || !competitions || !email || !birthdate) {
     event.preventDefault();
   }
 }
@@ -131,9 +180,19 @@ document.getElementsByClassName("errorMessage")[6].style.marginLeft = "6px";
 const icons = document.querySelectorAll('.icon');
 icons.forEach(icon => {
   icon.style.position = "absolute";
-  icon.classList.contains("birthInput") ? icon.style.right = "47px" : icon.style.right = "15px";
-  icon.classList.contains("competitionsInput") ? icon.style.top = "68px" : icon.style.top = "52px";
   icon.style.visibility = "hidden";
+  // icon.classList.contains("competitionsInput") ? icon.style.top = "68px" : icon.style.top = "52px";
+  // icon.classList.contains("birthInput") ? icon.style.right = "47px" : icon.style.right = "15px";
+  if (icon.classList.contains("birthInput")) {
+    icon.style.right = "47px";
+    icon.style.top = "52px";
+  } else if (icon.classList.contains("competitionsInput")) {
+    icon.style.right = "35px";
+    icon.style.top = "67px"
+  } else {
+    icon.style.right = "15px";
+    icon.style.top = "52px";
+  }
 });
 
 // the valid icon take the color "limegreen"
@@ -158,13 +217,18 @@ errorMessages.forEach(message => {
 
 // we create a text-control array after they appears in DOM
 const inputTexts = document.querySelectorAll('.text-control');
+inputTexts.forEach(inputText => {
+  inputText.style.border = "4px solid";
+  inputText.style.borderColor = "white";
+});
 
+// 1) FIRST NAME
 // render the borders green and remove the error message
 function validFeedback(inputId, iconId, messageId) {
   // green borders
   inputTexts.forEach(inputText => {
     if (inputText.id == inputId) {
-      inputText.style.border = "4px solid";
+      // inputText.style.border = "4px solid";
       inputText.style.borderColor = "limegreen";
 
       // give visibility to the valid icon
@@ -181,7 +245,7 @@ function errorFeedback(inputId, iconId, messageId) {
   // red borders
   inputTexts.forEach(inputText => {
     if (inputText.id == inputId) {
-      inputText.style.border = "4px solid";
+      // inputText.style.border = "4px solid";
       inputText.style.borderColor = "orangered";
 
       // give visibility to the error icon
@@ -195,7 +259,7 @@ function errorFeedback(inputId, iconId, messageId) {
 }
 
 //DEBUBG
-// launchModal();
+launchModal();
 
 // errorFeedback("first", 2, 0);
 // validFeedback("first", 1, 0);
@@ -217,3 +281,29 @@ function errorFeedback(inputId, iconId, messageId) {
 
 // errorFeedback("checkbox", 0, 6);
 // validFeedback("checkbox", 0, 6);
+
+let inputValidFeedbacks = {
+  first: {inputId:'first', iconId:1, messageId:0},
+  last: {inputId:'last', iconId:3, messageId:1},
+  email: {inputId:'email', iconId:5, messageId:2},
+  birthdate: {inputId:'birthdate', iconId:7, messageId:3},
+  quantity: {inputId:'quantity', iconId:9, messageId:4},
+  location: {inputId:'location', iconId:0, messageId:5},
+  checkbox: {inputId:'checkbox', iconId:0, messageId:6},
+};
+
+let inputErrorFeedbacks = {
+  first: {inputId:'first', iconId:2, messageId:0, onscreen:false},
+  last: {inputId:'last', iconId:4, messageId:1, onscreen:false},
+  email: {inputId:'email', iconId:6, messageId:2, onscreen:false},
+  birthdate: {inputId:'birthdate', iconId:8, messageId:3, onscreen:false},
+  quantity: {inputId:'quantity', iconId:10, messageId:4, onscreen:false},
+  location: {inputId:'location', iconId:0, messageId:5, onscreen:false},
+  checkbox: {inputId:'checkbox', iconId:0, messageId:6, onscreen:false},
+};
+
+testMessage(inputErrorFeedbacks.first)
+
+function testMessage(obj) {
+  console.log("Objet reçu : " + obj.name);
+}
