@@ -10,11 +10,14 @@ function editNav() {
 // DOM Elements
 const modalbg = document.querySelector(".bground");
 const modalBtn = document.querySelectorAll(".modal-btn");
-const formData = document.querySelectorAll(".formData");
+const formDatas = document.querySelectorAll(".formData");
 const modalClose = document.querySelector(".close");
-const submitBtn = document.getElementsByClassName("btn-submit");
+const submitBtnArray = document.getElementsByClassName("btn-submit");
 const modalBody = document.getElementsByClassName("modal-body")[0];
 const form = document.getElementsByTagName("form")[0];
+
+// moodal body height
+modalBody.style.height = "960px";
 
 // booleans used to validate submit
 let firstName = false;
@@ -25,37 +28,21 @@ let birthdate = false;
 let locations = false;
 let conditions = true;
 
-// object with all the error messages
-let errorMessageTexts = {
-  first: "Votre prénom doit comporter deux lettres minimum",
-  last: "Votre nom doit comporter deux lettres minimum",
-  email: "Veuillez renseigner une adresse e-mail valide",
-  birthdate: "Veuillez indiquer une date de naissance valide",
-  quantity: "Indiquez un chiffre (ou 0 si vous n'avez jamais participé)",
-  location: "Veuillez indiquer une ville",
-  checkbox: "Vous devez accepter les conditions d'utilisation"
-}
+// some regex we use in the project
+let nameReg = new RegExp(/[a-zA-Z]{2,}/);
+let emailReg = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+let birthdateReg = new RegExp(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/);
+let competitionsReg = new RegExp(/[0-9]{1,}/);
 
-// object with all the valid feedback parameters
-let inputValidFeedbacks = {
-  first: {id:0, inputId:'first', iconId:1, messageId:0},
-  last: {id:1, inputId:'last', iconId:3, messageId:1},
-  email: {id:2, inputId:'email', iconId:5, messageId:2},
-  birthdate: {id:3, inputId:'birthdate', iconId:7, messageId:3},
-  quantity: {id:4, inputId:'quantity', iconId:9, messageId:4},
-  location: {id:5, inputId:'location', iconId:0, messageId:5},
-  checkbox: {id:6, inputId:'checkbox', iconId:0, messageId:6},
-};
-
-// object with all the error feedback parameters
-let inputErrorFeedbacks = {
-  first: {inputId:'first', iconId:2, messageId:0, displayAfterSubmit:true},
-  last: {inputId:'last', iconId:4, messageId:1, displayAfterSubmit:true},
-  email: {inputId:'email', iconId:6, messageId:2, displayAfterSubmit:true},
-  birthdate: {inputId:'birthdate', iconId:8, messageId:3, displayAfterSubmit:true},
-  quantity: {inputId:'quantity', iconId:10, messageId:4, displayAfterSubmit:true},
-  location: {inputId:'location', iconId:0, messageId:5, displayAfterSubmit:true},
-  checkbox: {inputId:'checkbox', iconId:0, messageId:6, displayAfterSubmit:false},
+// settings of all the different inputs
+let settings = {
+  first: {id:0, name:'first', iconErrorId:2, iconValidId:1, message:"Votre prénom doit comporter deux lettres minimum", isSubmitReady:false, displayAfterSubmit:true},
+  last: {id:1, name:'last', iconErrorId:4, iconValidId:3, message:"Votre nom doit comporter deux lettres minimum", isSubmitReady:false, displayAfterSubmit:true},
+  email: {id:2, name:'email', iconErrorId:6, iconValidId:5, message:"Veuillez renseigner une adresse e-mail valide", isSubmitReady:false, displayAfterSubmit:true},
+  birthdate: {id:3, name:'birthdate', iconErrorId:8, iconValidId:7, message:"Veuillez indiquer une date de naissance valide", isSubmitReady:false, displayAfterSubmit:true},
+  quantity: {id:4, name:'quantity', iconErrorId:10, iconValidId:9, message:"Indiquez un chiffre (ou 0 si vous n'avez jamais participé)", isSubmitReady:false, displayAfterSubmit:true},
+  location: {id:5, name:'location', iconErrorId:0, iconValidId:0, message:"Veuillez indiquer une ville", isSubmitReady:false, displayAfterSubmit:true},
+  checkbox: {id:6, name:'checkbox', iconErrorId:0, iconValidId:0, message:"Vous devez accepter les conditions d'utilisation", isSubmitReady:true, displayAfterSubmit:false},
 };
 
 // adding Font Awesome script
@@ -64,24 +51,23 @@ FontAwesomeScript.setAttribute("src", "https://kit.fontawesome.com/f98c9ed341.js
 FontAwesomeScript.setAttribute("type", "text/javascript");
 document.head.appendChild(FontAwesomeScript);
 
-// adding new divs for icons and error messages
-for (let i = 0; i < 7; i++) {
-  if (i == 3) formData[i].innerHTML += "<i class='icon validIcon birthInput fas fa-check-circle'></i><i class='icon errorIcon birthInput fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
-  else if (i == 4) formData[i].innerHTML += "<i class='icon validIcon competitionsInput fas fa-check-circle'></i><i class='icon errorIcon competitionsInput fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
-  else if (i == 5) formData[i].outerHTML += "<div class='errorMessage'>Error message</div>";
-  else if (i == 6) formData[i].innerHTML += "<div class='errorMessage'>Error message</div>";
-  else formData[i].innerHTML += "<i class='icon validIcon fas fa-check-circle'></i><i class='icon errorIcon fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
-  formData[i].style.position = "relative";
-}
+// new html elements: icons and error messages
+formDatas.forEach(formData => {
+  if (formData.querySelector("#birthdate") !== null) {
+    formData.innerHTML += "<i class='icon validIcon birthInput fas fa-check-circle'></i><i class='icon errorIcon birthInput fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
+    formData.style.paddingBottom = "7px";
+  }
+  else if (formData.querySelector("#quantity") !== null) formData.innerHTML += "<i class='icon validIcon competitionsInput fas fa-check-circle'></i><i class='icon errorIcon competitionsInput fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
+  else if (formData.querySelector("#location1") !== null) formData.outerHTML += "<div class='errorMessage'>Error message</div>";
+  else if (formData.querySelector("#checkbox1") !== null) {
+    formData.innerHTML += "<div class='errorMessage'>Error message</div>";
+    formData.style.paddingBottom = "30px";
+  }
+  else formData.innerHTML += "<i class='icon validIcon fas fa-check-circle'></i><i class='icon errorIcon fas fa-exclamation-circle'></i><small class='errorMessage'>Error message</small></br>";
+  formData.style.position = "relative";
+});
 
-// adding some style when it's necessary for a better lisibility
-document.getElementsByClassName("formData")[3].style.paddingBottom = "7px";
-document.getElementsByClassName("formData")[6].style.paddingBottom = "30px";
-document.getElementsByClassName("errorMessage")[5].style.marginLeft = "6px";
-document.getElementsByClassName("errorMessage")[6].style.marginLeft = "6px";
-document.getElementsByClassName("modal-body")[0].style.height = "960px";
-
-// adding some style to our new elements
+// adding some style
 const icons = document.querySelectorAll('.icon');
 icons.forEach(icon => {
   icon.style.position = "absolute";
@@ -96,56 +82,27 @@ icons.forEach(icon => {
     icon.style.right = "15px";
     icon.style.top = "52px";
   }
-});
-
-// the valid icon take the color "limegreen"
-const validIcons = document.querySelectorAll('.validIcon');
-validIcons.forEach(validIcon => {
-  validIcon.style.color = "LimeGreen";
-});
-
-// the valid icon take the color "orangered"
-const errorIcons = document.querySelectorAll('.errorIcon');
-errorIcons.forEach(errorIcon => {
-  errorIcon.style.color = "OrangeRed";
+  (icon.classList.contains("validIcon")) ? icon.style.color = "LimeGreen" :  icon.style.color = "OrangeRed";
 });
 
 // preparing all the error messages
 const errorMessages = document.querySelectorAll('.errorMessage');
-errorMessages.forEach(message => {
-  message.style.color = "OrangeRed";
-  message.style.visibility = "hidden";
-  message.style.fontSize = "medium";
+errorMessages.forEach(text => {
+  text.style.color = "OrangeRed";
+  text.style.visibility = "hidden";
+  (window.matchMedia("(max-width: 600px)").matches) ? text.style.fontSize = "small" : text.style.fontSize = "medium";
 });
 
 // we create a text-control array after they appears in DOM
-const inputTexts = document.querySelectorAll('.text-control');
-inputTexts.forEach(inputText => {
-  inputText.style.border = "4px solid";
-  inputText.style.borderColor = "white";
+const formInputsText = document.querySelectorAll('.text-control');
+formInputsText.forEach(formInput => {
+  formInput.style.border = "4px solid";
+  formInput.style.borderColor = "white";
 });
 
-// launch modal event
-modalBtn.forEach((btn) => btn.addEventListener("click", launchModal));
-
-// close modal event
-modalClose.addEventListener("click", closeModal);
-
-// we launch the modal form, then we add listeners on elements after they appear in the DOM
-function launchModal() {
-  modalbg.style.display = "block";
-  submitBtn[0].addEventListener("click", submit, false);
-  initListeners();
-}
-
-// closing modal with display none
-function closeModal() {
-  modalbg.style.display = "none";
-}
-
-// ! We init here the listeners for all the inputs ! \\
+// initialization of the listeners
 function initListeners() {
-
+  
   // first name
   document.getElementById("first").addEventListener("focusout", function onFocusOut(event) {
     checkFirstNameValue(event);
@@ -186,126 +143,104 @@ function initListeners() {
   const locationInputs = document.querySelectorAll('input[type=radio]');
   locationInputs.forEach(locationInput => {
     locationInput.addEventListener("change", function (event) {
-      if (this.validity.valid == true) {
-        locations = true;
-        validFeedback(inputValidFeedbacks.location);
-      } else {
-        locations = false;
-        errorFeedback(inputErrorFeedbacks.location);
-      }
+      (this.validity.valid == true) ? displayFeedback(settings.location, "valid") : displayFeedback(settings.location, "error");
     })
   });
 
   // general terms and conditions
   document.getElementById("checkbox1").setAttribute("required", "");
   document.getElementById("checkbox1").addEventListener("change", function (event) {
-    if (this.validity.valid == true) {
-      conditions = true;
-      validFeedback(inputValidFeedbacks.checkbox);
-    } else {
-      conditions = false;
-      errorFeedback(inputErrorFeedbacks.checkbox);
-    }
+    (this.validity.valid == true) ? displayFeedback(settings.checkbox, "valid") : displayFeedback(settings.checkbox, "error");
   });
 }
 
 // test if first name is valid
 function checkFirstNameValue(event) {
-  if (/[a-zA-Z]{2,}/.test(event.target.value)) {
-    firstName = true;
-    validFeedback(inputValidFeedbacks.first);
-  } else {
-    firstName = false;
-    errorFeedback(inputErrorFeedbacks.first);
-  }
+  (nameReg.test(event.target.value)) ? displayFeedback(settings.first, "valid") : displayFeedback(settings.first, "error");
 }
 
 // test if last name is valid
 function checkLastNameValue(event) {
-  if (/[a-zA-Z]{2,}/.test(event.target.value)) {
-    lastName = true;
-    validFeedback(inputValidFeedbacks.last);
-  } else {
-    lastName = false;
-    errorFeedback(inputErrorFeedbacks.last);
-  }
+  (nameReg.test(event.target.value)) ? displayFeedback(settings.last, "valid") : displayFeedback(settings.last, "error");
 }
 
 // test if email is valid
 function checkEmailValue(event) {
-  if (/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(event.target.value)) {
-    email = true;
-    validFeedback(inputValidFeedbacks.email);
-  } else {
-    email = false;
-    errorFeedback(inputErrorFeedbacks.email);
-  }
+  (emailReg.test(event.target.value)) ? displayFeedback(settings.email, "valid") : displayFeedback(settings.email, "error");
 }
 
 // test if birthdate is valid
 function checkBirthdateValue(event) {
-  if (/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/.test(event.target.value)) {
-    birthdate = true;
-    validFeedback(inputValidFeedbacks.birthdate);
-  } else {
-    birthdate = false;
-    errorFeedback(inputErrorFeedbacks.birthdate);
-  }
+  (birthdateReg.test(event.target.value)) ? displayFeedback(settings.birthdate, "valid") : displayFeedback(settings.birthdate, "error");
 }
 
 // test if number of competitions is valid
 function checkCompetitionsValue(event) {
-  if (/[0-9]{1,}/.test(event.target.value)) {
-    competitions = true;
-    validFeedback(inputValidFeedbacks.quantity);
-  } else {
-    competitions = false;
-    errorFeedback(inputErrorFeedbacks.quantity);
+  (competitionsReg.test(event.target.value)) ? displayFeedback(settings.quantity, "valid") : displayFeedback(settings.quantity, "error");
+}
+
+// display a valid or an error feedback
+function displayFeedback(input, errorOrValid) {
+
+  // valid feedback
+  if (errorOrValid == "valid") {
+    formInputsText.forEach(formInput => {
+      if (formInput.id == input.name) {
+        formInput.style.borderColor = "limegreen";
+        icons[input.iconErrorId].style.visibility = "hidden";
+        icons[input.iconValidId].style.visibility = "visible";
+      }
+    });
+    errorMessages[input.id].style.visibility = "hidden";
+    input.isSubmitReady = true;
   }
+
+  // error feedback
+  else if (errorOrValid == "error") {
+    formInputsText.forEach(formInput => {
+      if (formInput.id == input.name) {
+        formInput.style.borderColor = "orangered";
+        icons[input.iconValidId].style.visibility = "hidden";
+        icons[input.iconErrorId].style.visibility = "visible";
+      }
+    });
+    errorMessages[input.id].textContent = input.message;
+    errorMessages[input.id].style.visibility = "visible";
+    input.isSubmitReady = false;
+  }
+  input.displayAfterSubmit = false;
 }
 
-// render the borders green, display the valid icon and remove the error message
-function validFeedback(feedback) {
-  inputTexts.forEach(inputText => {
-    if (inputText.id == feedback.inputId) {
-      inputText.style.borderColor = "limegreen";
-      icons[feedback.iconId + 1].style.visibility = "hidden";
-      icons[feedback.iconId].style.visibility = "visible";
-    }
-  });
-  errorMessages[feedback.messageId].style.visibility = "hidden";
-  inputErrorFeedbacks[Object.keys(inputErrorFeedbacks)[feedback.id]].displayAfterSubmit = false;
-}
+// launch modal
+modalBtn.forEach((btn) => btn.addEventListener("click", function(event) {
+  modalbg.style.display = "block";
+  for (let submitBtn of submitBtnArray) submitBtn.addEventListener("click", submit, false);
+  initListeners();
+}));
 
-// render the borders red, display the error icon and the error message
-function errorFeedback(feedback) {
-  inputTexts.forEach(inputText => {
-    if (inputText.id == feedback.inputId) {
-      inputText.style.borderColor = "orangered";
-      icons[feedback.iconId - 1].style.visibility = "hidden";
-      icons[feedback.iconId].style.visibility = "visible";
-    }
-  });
-  errorMessages[feedback.messageId].textContent = errorMessageTexts[feedback.inputId];
-  errorMessages[feedback.messageId].style.visibility = "visible";
-  feedback.displayAfterSubmit = false;
+// close modal
+modalClose.addEventListener("click", function(event){
+  modalbg.style.display = "none";
+});
+
+// return true if all the form is complete
+function isSubmitReady() {
+  for (let i in settings) {
+    if (settings[i].isSubmitReady == false) return false;
+  }
+  return true;
 }
 
 // if entries are not correct, user can't submit
 function submit(event) {
-  if (!firstName || !lastName || !competitions || !email || !birthdate || !locations || !conditions) {
-    for (let input in inputErrorFeedbacks) {
-      if (inputErrorFeedbacks[input].displayAfterSubmit) {
-        errorFeedback(inputErrorFeedbacks[input]);
-      }
+  if (!isSubmitReady()) {
+    for (let i in settings) {
+      if (settings[i].displayAfterSubmit) displayFeedback(settings[i], "error");
     }
-    event.preventDefault();
     resetInputListeners();
   }
-  else {
-    event.preventDefault();
-    onSubmitMessage();
-  }
+  else onSubmitMessage();
+  event.preventDefault();
 }
 
 // the focusOut listeners are replacing by input listeners, they are more reactive and more helpful for an user who needs help
