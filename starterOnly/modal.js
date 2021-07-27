@@ -19,15 +19,6 @@ const form = document.getElementsByTagName("form")[0];
 // moodal body height
 modalBody.style.height = "960px";
 
-// booleans used to validate submit
-let firstName = false;
-let lastName = false;
-let competitions = false;
-let email = false;
-let birthdate = false;
-let locations = false;
-let conditions = true;
-
 // some regex we use in the project
 let nameReg = new RegExp(/[a-zA-Z]{2,}/);
 let emailReg = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
