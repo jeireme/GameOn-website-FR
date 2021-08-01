@@ -42,6 +42,13 @@ FontAwesomeScript.setAttribute("src", "https://kit.fontawesome.com/f98c9ed341.js
 FontAwesomeScript.setAttribute("type", "text/javascript");
 document.head.appendChild(FontAwesomeScript);
 
+// launch modal
+modalBtn.forEach((btn) => btn.addEventListener("click", function(event) {
+  modalbg.style.display = "block";
+  for (let submitBtn of submitBtnArray) submitBtn.addEventListener("click", submit, false);
+  initListeners();
+}));
+
 // new html elements: icons and error messages
 formDatas.forEach(formData => {
   if (formData.querySelector("#birthdate") !== null) {
@@ -201,13 +208,6 @@ function displayFeedback(input, isValidated) {
   }
   input.displayAfterSubmit = false;
 }
-
-// launch modal
-modalBtn.forEach((btn) => btn.addEventListener("click", function(event) {
-  modalbg.style.display = "block";
-  for (let submitBtn of submitBtnArray) submitBtn.addEventListener("click", submit, false);
-  initListeners();
-}));
 
 // close modal
 modalClose.addEventListener("click", function(event){
