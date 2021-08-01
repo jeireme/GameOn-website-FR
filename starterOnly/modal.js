@@ -134,47 +134,47 @@ function initListeners() {
   const locationInputs = document.querySelectorAll('input[type=radio]');
   locationInputs.forEach(locationInput => {
     locationInput.addEventListener("change", function (event) {
-      (this.validity.valid == true) ? displayFeedback(settings.location, "valid") : displayFeedback(settings.location, "error");
+      displayFeedback(settings.location, this.validity.valid);
     })
   });
 
   // general terms and conditions
   document.getElementById("checkbox1").setAttribute("required", "");
   document.getElementById("checkbox1").addEventListener("change", function (event) {
-    (this.validity.valid == true) ? displayFeedback(settings.checkbox, "valid") : displayFeedback(settings.checkbox, "error");
+    displayFeedback(settings.checkbox, this.validity.valid);
   });
 }
 
 // test if first name is valid
 function checkFirstNameValue(event) {
-  (nameReg.test(event.target.value)) ? displayFeedback(settings.first, "valid") : displayFeedback(settings.first, "error");
+  displayFeedback(settings.first, nameReg.test(event.target.value));
 }
 
 // test if last name is valid
 function checkLastNameValue(event) {
-  (nameReg.test(event.target.value)) ? displayFeedback(settings.last, "valid") : displayFeedback(settings.last, "error");
+  displayFeedback(settings.last, nameReg.test(event.target.value));
 }
 
 // test if email is valid
 function checkEmailValue(event) {
-  (emailReg.test(event.target.value)) ? displayFeedback(settings.email, "valid") : displayFeedback(settings.email, "error");
+  displayFeedback(settings.email, emailReg.test(event.target.value));
 }
 
 // test if birthdate is valid
 function checkBirthdateValue(event) {
-  (birthdateReg.test(event.target.value)) ? displayFeedback(settings.birthdate, "valid") : displayFeedback(settings.birthdate, "error");
+  displayFeedback(settings.birthdate, birthdateReg.test(event.target.value));
 }
 
 // test if number of competitions is valid
 function checkCompetitionsValue(event) {
-  (competitionsReg.test(event.target.value)) ? displayFeedback(settings.quantity, "valid") : displayFeedback(settings.quantity, "error");
+  displayFeedback(settings.quantity, competitionsReg.test(event.target.value));
 }
 
 // display a valid or an error feedback
-function displayFeedback(input, errorOrValid) {
+function displayFeedback(input, isValidated) {
 
   // valid feedback
-  if (errorOrValid == "valid") {
+  if (isValidated) {
     formInputsText.forEach(formInput => {
       if (formInput.id == input.name) {
         formInput.style.borderColor = "limegreen";
@@ -187,7 +187,7 @@ function displayFeedback(input, errorOrValid) {
   }
 
   // error feedback
-  else if (errorOrValid == "error") {
+  else if (!isValidated) {
     formInputsText.forEach(formInput => {
       if (formInput.id == input.name) {
         formInput.style.borderColor = "orangered";
@@ -226,7 +226,7 @@ function isSubmitReady() {
 function submit(event) {
   if (!isSubmitReady()) {
     for (let i in settings) {
-      if (settings[i].displayAfterSubmit) displayFeedback(settings[i], "error");
+      if (settings[i].displayAfterSubmit) displayFeedback(settings[i], false);
     }
     resetInputListeners();
   }
